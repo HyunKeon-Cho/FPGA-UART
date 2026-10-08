@@ -12,3 +12,5 @@ module top_UART (
     , output logic TXD
     , input logic
 )
+
+endmodule
