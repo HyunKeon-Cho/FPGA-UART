@@ -3,6 +3,7 @@ module UART_rx #(
     parameter int unsigned BAUD_DIV_FRAC_WIDTH = 16,
     parameter int unsigned OVERSAMPLING_RATE = 16,
     parameter int unsigned BITWIDTH = 8
+    parameter int unsigned START_CHECK_ITERATION = ,
 ) (
     input  logic                           clk,
     input  logic                           nrst,
@@ -38,7 +39,7 @@ end
 // ********************************
 // bit detector
 // ********************************
-localparam bd_bitwidth = OVERSAMPLING_RATE/2;
+localparam bd_bitwidth = 3;
 logic [bd_bitwidth-1:0] bd_fifo;
 logic bd_detected_data;
 
