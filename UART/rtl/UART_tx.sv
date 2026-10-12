@@ -15,18 +15,50 @@ module UART_tx #(
     // BUF
     logic [BITWIDTH-1:0] buf;
 
+    // controller
+    logic start_end_data;
+    logic send;
     logic shift;
-    logic [BITWIDTH-1:0] sreg;
-    
+    logic enable;
+    logic [BITWIDTH:0] fifo;
+
+    // ********************************
+    // cotroller
+    // ********************************
+    tx_controller #(
+        .OVERSAMPLING_RATE(OVERSAMPLING_RATE),
+        .BITWIDTH(BITWIDTH)
+    ) u_tx_controller (
+        .clk(clk),
+        .nrst(nrst),
+        .wr_en(wr_en),
+        .start_end_data(start_end_data),
+        .send(send),
+        .shift(shift),
+        .enable(enable),
+        .ready(ready)
+    );
+
     // ********************************
     // BUF
     // ********************************
-    always @(negedge clk or negedge nrst) begin
+    always @(negedge enable or negedge nrst) begin
         if (!nrst) begin
             buf <= 0;
         end else begin
-            if (shift) begin
-                buf <= {1'b0, buf[BITWIDTH-1:0]};
-
+            if (enable) begin
+                if (shift) begin
+                    buf <= {1'b0, buf[BITWIDTH-1:0]};
+                end else begin
+                    buf <= buf;
+                end
+            end else if (wr_en) begin
+                buf <= indata;
+            end else begin
+                buf <= buf;
+            end
+        end
     end
+
+
 endmodule
