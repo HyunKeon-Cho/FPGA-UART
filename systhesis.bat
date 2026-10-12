@@ -44,7 +44,9 @@ try {
     if (-not (Test-Path -LiteralPath $taskXdc -PathType Leaf)) {
         throw "Board constraints not found: $taskXdc"
     }
-    $taskTopFile = Join-Path $taskRoot "UART\rtl\$taskTop.sv"
+    # UART_rx names the test suite; its TB instantiates the complete UART core.
+    $taskDesignTop = if ($taskTop -eq 'UART_rx') { 'top_UART' } else { $taskTop }
+    $taskTopFile = Join-Path $taskRoot "UART\rtl\$taskDesignTop.sv"
     if (-not (Test-Path -LiteralPath $taskTopFile -PathType Leaf)) {
         throw "RTL file not found: $taskTopFile"
     }
@@ -58,15 +60,18 @@ try {
 lassign $argv root_dir top_name part_name mode xdc_file
 proc synthesize_uart {root_dir top_name part_name xdc_file} {
     set rtl_dir [file join $root_dir UART rtl]
-    set sources [list [file join $rtl_dir ${top_name}.sv]]
-    if {$top_name eq "UART_rx"} {
-        lappend sources [file join $rtl_dir rx_clock_generator.sv]
+    set design_top $top_name
+    if {$top_name eq "UART_rx"} { set design_top top_UART }
+    set sources [list [file join $rtl_dir ${design_top}.sv]]
+    if {$design_top eq "top_UART"} {
+        lappend sources [file join $rtl_dir clock_generator.sv]
+        lappend sources [file join $rtl_dir UART_rx.sv]
         lappend sources [file join $rtl_dir rx_controller.sv]
     }
     read_verilog -sv $sources
     puts "\[bat\] Read constraints: $xdc_file"
     read_xdc $xdc_file
-    synth_design -top $top_name -part $part_name
+    synth_design -top $design_top -part $part_name
     write_checkpoint -force ${top_name}_synth.dcp
     write_verilog -force -mode funcsim ${top_name}_synth.v
     report_utilization -file ${top_name}_utilization.rpt
@@ -85,6 +90,7 @@ if {[catch {synthesize_uart $root_dir $top_name $part_name $xdc_file} message]} 
     Write-Host "[BOARD] $($taskBoardInfo.board.display_name)"
     Write-Host "[PART ] $taskPart"
     Write-Host "[TOP  ] $taskTop"
+    Write-Host "[DUT  ] $taskDesignTop"
     Write-Host "[XDC  ] $taskXdc"
     Push-Location -LiteralPath $taskOutput
     try {

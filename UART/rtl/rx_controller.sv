@@ -3,16 +3,19 @@ module rx_controller #(
     parameter int unsigned BITWIDTH = 8
 )(
     input  logic clk,
-    input  logic rx_clk,
     input  logic nrst,
-
-    input  logic start,
-    output logic clock_enable,
-    output logic rx_valid
+    input  logic indata,
+    output logic enable,
+    output logic valid
 );
 
-localparam  int unsigned COUNTER_BITWIDTH = $clog2(BITWIDTH)+1;
+localparam  int unsigned COUNTER_BITWIDTH = $clog2(OVERSAMPLING_RATE)+1;
+localparam  int unsigned RX_COUNTER_BITWIDTH = $clog2(BITWIDTH)+1;
 
+// ********************************
+// logic define
+// ********************************
+// FSM
 typedef enum logic [3:0] {
     IDLE = 4'b0001,
     IN   = 4'b0010,
@@ -22,19 +25,40 @@ typedef enum logic [3:0] {
 
 state_t cstate, nstate;
 
+// counter
 logic [COUNTER_BITWIDTH-1:0] cnt;
+logic [RX_COUNTER_BITWIDTH-1:0] rx_cnt;
 logic cnt_reset_triger;
+logic rx_cnt_reset_triger;
 
-assign cnt_reset_triger = !nrst | cstate[0] | cstate[1];
 
-always_ff @(negedge rx_clk or posedge cnt_reset_triger) begin
-    if (cnt_reset_triger) begin
+// ********************************
+// counter
+// ********************************
+assign cnt_reset_triger = nrst & (cnt != OVERSAMPLING_RATE) & cstate[2];
+
+always_ff @(negedge clk or negedge cnt_reset_triger) begin
+    if (!cnt_reset_triger) begin
         cnt <= 0;
     end else begin
         cnt <= cnt + 1;
     end
 end
 
+assign rx_cnt_reset_triger = nrst & cstate[2];
+
+
+always_ff @(negedge enable or negedge rx_cnt_reset_triger) begin
+    if (!rx_cnt_reset_triger) begin
+        rx_cnt <= 0;
+    end else begin
+        rx_cnt <= rx_cnt + 1;
+    end
+end
+
+// ********************************
+// FSM
+// ********************************
 always_ff @(negedge clk or negedge nrst) begin
     if (!nrst) begin
         cstate <= IDLE;
@@ -43,31 +67,11 @@ always_ff @(negedge clk or negedge nrst) begin
     end
 end
 
-always_ff @(negedge clk or negedge nrst) begin
-    if (!nrst) begin     
-        clock_enable <= 0;
-        rx_valid <= 0;
-    end else if (cstate == IN) begin
-        clock_enable <= 0;
-        rx_valid <= 0;
-    end else if (cstate == PROC) begin
-        clock_enable <= 1;
-        rx_valid <= 0;
-    end else if (cstate == OUT) begin
-        clock_enable <= 0;
-        // OUT lasts one system clock cycle: report one completed receive.
-        rx_valid <= 1;
-    end else begin
-        clock_enable <= 0;
-        rx_valid <= 0;
-    end
-end
-
 always_comb begin
     nstate = cstate;
     case(cstate) 
         IDLE : begin
-            if (start == 1) begin
+            if (indata == 0) begin
                 nstate = IN;
             end
         end
@@ -75,12 +79,12 @@ always_comb begin
             nstate = PROC;
         end
         PROC : begin
-            if (cnt == BITWIDTH+1) begin
+            if (rx_cnt == BITWIDTH+2) begin
                 nstate = OUT;
             end
         end
         OUT : begin
-            if (start == 1) begin
+            if (indata == 0) begin
                 nstate = IN;
             end else begin
                 nstate = IDLE;
@@ -90,6 +94,29 @@ always_comb begin
             nstate = IDLE;
         end
     endcase
+end
+
+// ********************************
+// reg update
+// ********************************
+
+always_ff @(negedge clk or negedge nrst) begin
+    if (!nrst) begin     
+        valid <= 1'b0;
+        enable <= 1'b1;
+    end else if (cstate == IN) begin
+        valid <= 0;
+        enable <= 1'b1;
+    end else if (cstate == PROC) begin
+        valid <= 0;
+        enable <= (cnt == (OVERSAMPLING_RATE >> 1)) ? 1'b0 : 1'b1;
+    end else if (cstate == OUT) begin
+        valid <= 1;
+        enable <= 1'b1;
+    end else begin
+        valid <= 0;
+        enable <= 1'b1;
+    end
 end
 
 endmodule

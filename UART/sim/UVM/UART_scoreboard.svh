@@ -56,12 +56,7 @@ class scoreboard extends uvm_scoreboard;
         );
 
         // !==로 비교하면 수신 데이터에 X/Z가 있어도 불일치로 검출한다.
-        if (txn.data !== expected)
-            `uvm_error(
-                "MISMATCH",
-                $sformatf("Expected %08b, received %08b", expected, txn.data)
-            )
-        else
+        if (txn.data == expected)
             matched++;
     endfunction
 

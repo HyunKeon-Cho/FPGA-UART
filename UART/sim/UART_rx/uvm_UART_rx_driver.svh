@@ -7,8 +7,8 @@ class driver extends uvm_driver #(item);
 
     uvm_analysis_port #(item) expected_ap;
 
-    int channel_skew_rate = 0;    // 비트 길이 최대 +5%
-    int channel_noise_rate = 1; // 클록당 입력 반전 확률 10%
+    int channel_skew_rate;  // TB 설정, 0.1% 단위의 비트 길이 편차
+    int channel_noise_rate; // TB 설정, 0.1% 단위의 클록당 입력 반전 확률
     bit indata = 1'b1;           // UART idle 상태
 
     // 생성자
@@ -24,8 +24,14 @@ class driver extends uvm_driver #(item);
         if (!uvm_config_db#(virtual UART_rx_if)::get(this, "", "vif", vif))
             `uvm_fatal("NOVIF", "UART interface is missing")
 
-        if (channel_skew_rate < 0)
-            `uvm_fatal("SKEW", "channel_skew_rate must be non-negative")
+        if (!uvm_config_db#(int)::get(this, "", "channel_skew_rate", channel_skew_rate))
+            `uvm_fatal("SKEW", "channel_skew_rate is missing")
+
+        if (!uvm_config_db#(int)::get(this, "", "channel_noise_rate", channel_noise_rate))
+            `uvm_fatal("NOISE", "channel_noise_rate is missing")
+
+        if (channel_skew_rate < 0 || channel_skew_rate >= 1000)
+            `uvm_fatal("SKEW", "channel_skew_rate must be between 0 and 999")
 
         if (channel_noise_rate < 0 || channel_noise_rate > 100)
             `uvm_fatal("NOISE", "channel_noise_rate must be between 0 and 100")
@@ -37,10 +43,10 @@ class driver extends uvm_driver #(item);
             real channel_skew;
             int channel_noise;
 
-            // 0%, 1%, ..., channel_skew_rate% 중 하나를 선택한다.
+            // -rate부터 +rate까지 0.1% 단위로 매 비트의 편차를 선택한다.
             channel_skew =
-                $urandom_range(channel_skew_rate, 0) / 100.0;
-
+                (int'($urandom_range(2 * channel_skew_rate, 0))
+                - channel_skew_rate) / 1000.0;
             for (int j = 0;
                  j < vif.bit_cycles * (1.0 + channel_skew);
                  j++) begin

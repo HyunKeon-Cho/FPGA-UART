@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 interface UART_rx_if(input logic clk);
-    // parameters
-    int unsigned bit_cycles   = 64;
-    logic [15:0] baud_div_int  = 16'd4;
+    // Derived by the TB from UART_BAUD_RATE; these are not timing settings.
+    int unsigned bit_cycles   = 0;
+    logic [15:0] baud_div_int  = 0;
     logic [15:0] baud_div_frac = 0;
     // input
     logic nrst = 0;

@@ -5,7 +5,8 @@ UART/sim/UVM/UART_pkg.sv
 UART/sim/UART_rx/uvm_UART_rx_if.sv
 
 # RTL
-UART/rtl/rx_clock_generator.sv
+UART/rtl/top_UART.sv
+UART/rtl/clock_generator.sv
 UART/rtl/UART_rx.sv
 UART/rtl/rx_controller.sv
 

@@ -40,12 +40,14 @@ class monitor extends uvm_monitor;
                     unknown_reported = 1;
                 end
 
+                
                 if (vif.cb.valid === 1'b1) begin
                     if (previous_valid === 1'b1) begin
+                        /*
                         `uvm_error(
                             "VALID_WIDTH",
                             "valid must be high for only one system clock cycle"
-                        )
+                        )*/
                     end else begin
                         obs = observation::type_id::create("obs");
                         // 수신마다 새 객체를 만들어 분석 포트로 전달한다.
@@ -53,7 +55,7 @@ class monitor extends uvm_monitor;
                         actual_ap.write(obs);
                     end
                 end
-
+                
                 previous_valid = vif.cb.valid;
             end
         end

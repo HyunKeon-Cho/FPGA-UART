@@ -42,6 +42,10 @@ try {
     if (-not (Test-Path -LiteralPath $taskNetlist -PathType Leaf)) {
         throw "Synthesis netlist not found. Run systhesis.bat $taskTop --board `"$taskBoard`" first."
     }
+    $taskDesignTop = if ($taskTop -eq 'UART_rx') { 'top_UART' } else { $taskTop }
+    if (-not (Select-String -LiteralPath $taskNetlist -Pattern "^\s*module\s+$taskDesignTop\b" -Quiet)) {
+        throw "Netlist does not contain $taskDesignTop. Rebuild with systhesis.bat $taskTop --board `"$taskBoard`"."
+    }
     $taskTbDir = Join-Path $taskRoot "UART\sim\$taskTop"
     $taskUvmDir = Join-Path $taskRoot 'UART\sim\UVM'
     $taskFileList = Join-Path $taskTbDir "tb_${taskTop}_files.f"

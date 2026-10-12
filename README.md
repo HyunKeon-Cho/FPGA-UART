@@ -99,13 +99,19 @@ Windows에서 Vivado 도구(`vivado`, `xvlog`, `xelab`, `xsim`)가 PATH에 등�
 .\behavior_sim.bat UART_rx
 ```
 
-현재 UART_rx TB는 50 MHz 클록, 9600 baud, 8비트 데이터·패리티 없음·정지 비트 1개로 랜덤 8프레임을 전송합니다. scoreboard가 기대값과 수신값을 비교하며 최종 결과는 `RESULT: PASS / FAIL`로 표시합니다.
+현재 UART_rx TB는 50 MHz 클록, 9600 baud, 8비트 데이터·패리티 없음·정지 비트 1개로 랜덤 32프레임을 전송합니다. scoreboard가 기대값과 수신값을 비교하며 최종 결과는 `RESULT: PASS / FAIL`로 표시합니다.
+
+통신 속도는 `tb_UART_rx.sv`의 `UART_BAUD_RATE`만 변경합니다. 드라이버의 비트 길이와 DUT의 정수·소수 분주값은 이 값에서 자동 계산합니다. 비트 길이는 시스템 클록 단위로 올림하며, 9600 baud에서는 5209클록(104.18 µs)입니다.
+
+프레임 수와 채널 조건도 TB의 `TEST_N`, `CHANNEL_SKEW_RATE`, `CHANNEL_NOISE_RATE`로 설정합니다. 두 rate 값은 0.1% 단위이며, skew는 매 비트에 ±방향으로 적용하고 noise는 매 시스템 클록에서 입력을 반전할 확률입니다. 기본값은 skew `50`(±5%), noise `0`입니다. skew의 허용 범위는 0~999, noise는 기존 범위인 0~100(최대 10%)입니다. TB에서 UVM 설정으로 드라이버에 전달합니다.
+
+전체 제한 시간은 `13 × TEST_N × MAX_BIT_PERIOD + 16 × BIT_PERIOD`입니다. `MAX_BIT_PERIOD`는 최대 양의 skew를 적용한 뒤 시스템 클록 단위로 올린 비트 길이입니다. 프레임당 8N1의 10비트와 최대 idle 3비트, 마지막 수신 대기 및 여유 시간을 포함하며 기본 32프레임·±5% skew의 제한 시간은 약 47.18 ms입니다.
 
 `behavior.bat`은 `tb_<모듈명>_files.f`가 있으면 UVM 방식으로 준비하고, 없으면 해당 RTL과 일반 TB를 사용합니다.
 
 ### 합성 및 합성 후 시뮬레이션
 
-합성 시 UART_rx와 하위 RTL을 읽고, 보드 디렉터리의 두 단계 위에 있는 `master.xdc`를 적용합니다. 합성 checkpoint(`UART_rx_synth.dcp`), 기능 netlist(`UART_rx_synth.v`)와 자원·타이밍·DRC 보고서를 저장합니다.
+`UART_rx`는 테스트 이름이며 TB의 DUT는 `top_UART`입니다. 합성 시 `top_UART`, `clock_generator`, `UART_rx`, `rx_controller`를 읽고 `top_UART`를 최상위로 합성합니다. 보드 디렉터리의 두 단계 위에 있는 `master.xdc`를 적용하고, 합성 checkpoint(`UART_rx_synth.dcp`), 기능 netlist(`UART_rx_synth.v`)와 자원·타이밍·DRC 보고서를 저장합니다. 기존 `UART_rx` 단독 합성 결과는 현재 TB와 호환되지 않으므로 다시 합성해야 합니다.
 
 ```powershell
 .\systhesis.bat UART_rx --board FPGA\cora-z7-07s\board\B.0
