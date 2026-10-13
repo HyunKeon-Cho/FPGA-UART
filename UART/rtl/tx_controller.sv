@@ -8,8 +8,7 @@ module tx_controller #(
 
     output logic state_bit,
     output logic send,
-    output logic shift,
-    output logic enable,
+    output logic tx_clk,
     output logic ready
 );
 
@@ -30,14 +29,15 @@ typedef enum logic [3:0] {
 state_t cstate, nstate;
 
 // counter
-logic [COUNTER_BITWIDTH+TX_COUNTER_BITWIDTH:0] cnt;
-logic cnt_reset_triger;
+logic [COUNTER_BITWIDTH-1:0] cnt;
+logic [TX_COUNTER_BITWIDTH-1:0] tx_cnt;
+logic tx_cnt_reset_triger;
+logic cnt_nrst;
 
 // ********************************
 // assign logic
 // ********************************
-assign enable = ~cstate[0];
-assign shift = ~(cnt == OVERSAMPLING_RATE-1);
+assign tx_clk = cnt == 0;
 assign send = cstate[2];
 assign ready = cstate[0] | cstate[3];
 assign state_bit = (cstate[0]) ? 1'b1 : cstate[3];       
@@ -45,16 +45,26 @@ assign state_bit = (cstate[0]) ? 1'b1 : cstate[3];
 // ********************************
 // counter
 // ********************************
-assign cnt_reset_triger = nrst & cstate[2];
 
-always_ff @(negedge clk or negedge cnt_reset_triger) begin
-    if (!cnt_reset_triger) begin
+assign cnt_nrst = nrst & (~cstate[0] & ~nstate[1]);
+
+always_ff @(negedge clk or negedge cnt_nrst) begin
+    if (!cnt_nrst) begin
         cnt <= 0;
     end else begin
-        cnt <= cnt + 1;
+        cnt <= cnt - 1;
     end
 end
 
+assign tx_cnt_reset_triger = nrst & cstate[2];
+
+always_ff @(negedge tx_clk or negedge tx_cnt_reset_triger) begin
+    if (!tx_cnt_reset_triger) begin
+        tx_cnt <= 0;
+    end else begin
+        tx_cnt <= tx_cnt + 1;
+    end
+end
 
 
 // ********************************
@@ -69,30 +79,41 @@ always_ff @(negedge clk or negedge nrst) begin
 end
 
 always_comb begin
-    nstate = cstate;
     case(cstate) 
         IDLE : begin
             if (wr_en) begin
                 nstate = IN;
+            end else begin
+                nstate <= IDLE;
             end
         end
         IN : begin
-            if (shift) begin
+            if (tx_clk) begin
                 nstate = PROC;
             end else begin
                 nstate = nstate;
             end
         end
         PROC : begin
-            if (cnt == (OVERSAMPLING_RATE << TX_COUNTER_BITWIDTH) - 1) begin
-                nstate = OUT;
+            if (tx_clk) begin 
+                if (tx_cnt == BITWIDTH-1) begin
+                    nstate = OUT;
+                end else begin
+                    nstate = nstate;
+                end
+            end else begin
+                nstate = nstate;
             end
         end
         OUT : begin
-            if (shift) begin
-                nstate = IN;
+            if (tx_clk) begin
+                if (wr_en) begin
+                    nstate = PROC;
+                end else begin
+                    nstate = IDLE;
+                end
             end else begin
-                nstate = IDLE;
+                nstate = nstate;
             end
         end
         default : begin

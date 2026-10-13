@@ -32,7 +32,8 @@ class scoreboard extends uvm_scoreboard;
     endfunction
 
     // 수신 결과와 기대값 비교
-    function void write_actual(observation txn);
+    // analysis 입력에서도 TX 확장의 비교 함수를 호출할 수 있게 한다.
+    virtual function void write_actual(observation txn);
         bit [7:0] expected;
 
         received++;

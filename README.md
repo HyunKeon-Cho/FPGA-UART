@@ -109,7 +109,24 @@ Windows에서 Vivado 도구(`vivado`, `xvlog`, `xelab`, `xsim`)가 PATH에 등�
 
 `behavior.bat`은 `tb_<모듈명>_files.f`가 있으면 UVM 방식으로 준비하고, 없으면 해당 RTL과 일반 TB를 사용합니다.
 
-### 합성 및 합성 후 시뮬레이션
+### TX Behavioral 검증
+
+TX 검증은 RX TB와 같은 `top_UART`를 DUT로 연결합니다. TX 인터페이스와 DUT는 50 MHz 기준 클록을 사용하며, baud 분주값은 RX TB와 같은 방식으로 계산해 DUT에 전달합니다. RX 입력은 idle high로 고정합니다. `tb_UART_tx.sv`의 `UART_BAUD_RATE`, `OVERSAMPLING_RATE`, `TEST_N`으로 조건을 설정합니다.
+
+```powershell
+.\behavior.bat UART_tx
+.\behavior_sim.bat UART_tx
+```
+
+드라이버는 `ready=1`을 확인한 뒤 `tx_data`와 `wr_en=1`을 구동하고, DUT가 `ready=0`으로 요청 수락을 알릴 때까지 유지합니다. `ready=0`을 관찰하면 `wr_en`을 내립니다. 12비트 시간 동안 요청이 수락되지 않으면 `TX_ACCEPT_TIMEOUT`으로 실패 처리합니다. 실제 시작 비트를 확인한 뒤 10비트의 프레임 시간과 0~3비트의 랜덤 idle 간격을 기다립니다. 모니터는 `txd`의 시작 에지를 기준으로 각 비트의 중앙을 관찰해 8N1 프레임을 복원하며, DUT 내부 상태는 참조하지 않습니다. RX와 같은 공통 시퀀스로 기본 32프레임의 랜덤 데이터를 전송합니다.
+
+TX 전용 scoreboard는 데이터 불일치와 X/Z를 오류로 처리하고, 누락·중복 수신도 검사합니다. 모니터는 리셋 후 idle, 시작 비트, 정지 비트를 검사합니다. `ready` 대기와 전체 실행에 제한 시간이 있으며, 오류가 없을 때만 `UART_UVM_PASS`를 출력합니다. TX 출력에는 RX 채널의 skew/noise 설정을 적용하지 않습니다.
+
+TB의 설정·클록·UVM·DUT·실행·리셋·timeout 구성은 RX TB 형식을 따릅니다. agent, env, test, 시퀀스는 RX와 같은 공통 클래스를 사용합니다. scoreboard의 큐·집계·누락 검사는 공통 구현을 상속하며, TX 패키지에 정의한 불일치 오류 보고만 factory override로 선택합니다.
+
+`top_UART`의 TX 연결 문법과 baud 클록 경로가 유효해야 실제 DUT 검증을 실행할 수 있습니다. 이 TB 변경에 RTL 수정과 TX 합성 후·배치배선 후 실행 스크립트 정리는 포함하지 않습니다.
+
+### RX 합성 및 합성 후 시뮬레이션
 
 `UART_rx`는 테스트 이름이며 TB의 DUT는 `top_UART`입니다. 합성 시 `top_UART`, `clock_generator`, `UART_rx`, `rx_controller`를 읽고 `top_UART`를 최상위로 합성합니다. 보드 디렉터리의 두 단계 위에 있는 `master.xdc`를 적용하고, 합성 checkpoint(`UART_rx_synth.dcp`), 기능 netlist(`UART_rx_synth.v`)와 자원·타이밍·DRC 보고서를 저장합니다. 기존 `UART_rx` 단독 합성 결과는 현재 TB와 호환되지 않으므로 다시 합성해야 합니다.
 

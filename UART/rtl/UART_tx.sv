@@ -12,16 +12,20 @@ module UART_tx #(
     // ********************************
     // define logic
     // ********************************
-    // BUF
-    logic [BITWIDTH-1:0] buf;
+    // shift_BUF
+    logic [BITWIDTH-1:0] shift_buf;
 
     // controller
-    logic start_end_data;
+    logic state_bit;
     logic send;
-    logic shift;
+    logic tx_clk;
     logic enable;
-    logic [BITWIDTH:0] fifo;
+    assign enable = ~ready;
 
+    // ********************************
+    // assignment
+    // ********************************
+    assign outdata = (send) ? shift_buf[0] : state_bit;
     // ********************************
     // cotroller
     // ********************************
@@ -32,30 +36,29 @@ module UART_tx #(
         .clk(clk),
         .nrst(nrst),
         .wr_en(wr_en),
-        .start_end_data(start_end_data),
+        .state_bit(state_bit),
         .send(send),
-        .shift(shift),
-        .enable(enable),
+        .tx_clk(tx_clk),
         .ready(ready)
     );
 
     // ********************************
-    // BUF
+    // shift_BUF
     // ********************************
-    always @(negedge enable or negedge nrst) begin
+    always @(negedge clk or negedge nrst) begin
         if (!nrst) begin
-            buf <= 0;
+            shift_buf <= 0;
         end else begin
-            if (enable) begin
-                if (shift) begin
-                    buf <= {1'b0, buf[BITWIDTH-1:0]};
+            if (send) begin
+                if (tx_clk == 0) begin
+                    shift_buf <= {1'b0, shift_buf[BITWIDTH-1:1]};
                 end else begin
-                    buf <= buf;
+                    shift_buf <= shift_buf;
                 end
             end else if (wr_en) begin
-                buf <= indata;
+                shift_buf <= indata;
             end else begin
-                buf <= buf;
+                shift_buf <= shift_buf;
             end
         end
     end

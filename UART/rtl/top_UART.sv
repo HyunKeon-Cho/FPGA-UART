@@ -45,4 +45,16 @@ UART_rx #(
     .valid          (rx_valid)
 );
 
+UART_tx #(
+    .OVERSAMPLING_RATE(OVERSAMPLING_RATE),
+    .BITWIDTH(BITWIDTH)
+) tx (
+    .clk    (oclk),
+    .nrst   (nrst),
+    .indata (tx_data),
+    .wr_en  (tx_wr_en),
+    .ready  (tx_ready),
+    .outdata(txd)
+);
+
 endmodule
