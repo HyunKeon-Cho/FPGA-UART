@@ -94,15 +94,15 @@ top_UART #(
 ) uart (
     .clk           (s_axi_aclk),
     .nrst          (s_axi_aresetn),
-    .uart_rxd      (uart_rxd),
-    .uart_txd      (uart_txd),
+    .rxd      (uart_rxd),
+    .txd      (uart_txd),
     .rx_valid      (rx_valid),
     .rx_data       (rx_data),
-    .rx_ready      (rx_ready),
+    .tx_ready      (tx_ready),
     .tx_wr_en      (tx_wr_en),
-    .tx_data       (tx_data)
+    .tx_data       (tx_data),
     .baud_div_int  (baud_div_int),
-    .baud_div_frac (baud_div_frac),
+    .baud_div_frac (baud_div_frac)
 );
 
 endmodule

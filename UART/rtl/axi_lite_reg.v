@@ -70,6 +70,7 @@ reg  [1:0]                    			rnext;
 reg  [31:0]                   			rdata;
 wire                          			ar_hs;
 wire [AXI_LITE_ADDR_WIDTH-1:0]          raddr;
+reg [31:0] reg_config = 0;
 
 //------------------------AXI read fsm-------------------
 assign s_axi_arready = (rstate == RDIDLE);
@@ -165,7 +166,6 @@ waddr <= s_axi_awaddr[AXI_LITE_ADDR_WIDTH-1:0];
 end
 
 // internal registers 
-reg [31:0] reg_config = 0;
 
 always @(posedge s_axi_aclk) begin
     if (!s_axi_aresetn) begin

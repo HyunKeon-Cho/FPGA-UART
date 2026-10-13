@@ -61,6 +61,15 @@ echo [bat] Prepared: %SNAPSHOT%
 echo [bat] Results: %SIM_DIR%
 exit /b 0
 
+if defined SIM (
+    if defined GUI (
+        call ./behavior_sim.bat "%MODULE%" --gui
+    ) else (
+        call ./behavior_sim.bat "%MODULE%"
+    )
+)
+
+
 :usage
 echo Usage: behavior.bat MODULE
 exit /b 1
@@ -68,3 +77,4 @@ exit /b 1
 :failed
 echo Behavioral simulation preparation failed. See the error above.
 exit /b 1
+

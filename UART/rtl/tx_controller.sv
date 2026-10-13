@@ -5,126 +5,51 @@ module tx_controller #(
     input  logic clk,
     input  logic nrst,
     input  logic wr_en,
-
     output logic state_bit,
     output logic send,
     output logic tx_clk,
     output logic ready
 );
+    localparam int COUNTER_BITWIDTH = (OVERSAMPLING_RATE > 1) ? $clog2(OVERSAMPLING_RATE) : 1;
+    localparam int TX_COUNTER_BITWIDTH = (BITWIDTH > 1) ? $clog2(BITWIDTH) : 1;
+    typedef enum logic [3:0] {
+        IDLE = 4'b0001, IN = 4'b0010, PROC = 4'b0100, OUT = 4'b1000
+    } state_t;
+    state_t cstate, nstate;
+    logic [COUNTER_BITWIDTH-1:0] cnt;
+    logic [TX_COUNTER_BITWIDTH-1:0] tx_cnt;
+    logic bit_done;
 
-localparam  int unsigned COUNTER_BITWIDTH = $clog2(OVERSAMPLING_RATE);
-localparam  int unsigned TX_COUNTER_BITWIDTH = $clog2(BITWIDTH);
+    assign bit_done = (cnt == OVERSAMPLING_RATE-1);
+    // UART_tx shifts at the falling clk edge that completes each data bit.
+    assign tx_clk = !bit_done;
+    assign send = (cstate == PROC);
+    assign ready = (cstate == IDLE || cstate == OUT);
+    assign state_bit = (cstate == IDLE || cstate == OUT);
 
-// ********************************
-// logic define
-// ********************************
-// FSM
-typedef enum logic [3:0] {
-    IDLE = 4'b0001,
-    IN   = 4'b0010,
-    PROC = 4'b0100,
-    OUT  = 4'b1000
-} state_t;
-
-state_t cstate, nstate;
-
-// counter
-logic [COUNTER_BITWIDTH-1:0] cnt;
-logic [TX_COUNTER_BITWIDTH-1:0] tx_cnt;
-logic tx_cnt_reset_triger;
-logic cnt_nrst;
-
-// ********************************
-// assign logic
-// ********************************
-assign tx_clk = cnt == 0;
-assign send = cstate[2];
-assign ready = cstate[0] | cstate[3];
-assign state_bit = (cstate[0]) ? 1'b1 : cstate[3];       
-
-// ********************************
-// counter
-// ********************************
-
-assign cnt_nrst = nrst & (~cstate[0] & ~nstate[1]);
-
-always_ff @(negedge clk or negedge cnt_nrst) begin
-    if (!cnt_nrst) begin
-        cnt <= 0;
-    end else begin
-        cnt <= cnt - 1;
+    always_ff @(negedge clk or negedge nrst) begin
+        if (!nrst) begin
+            cstate <= IDLE;
+            cnt <= '0;
+            tx_cnt <= '0;
+        end else begin
+            cstate <= nstate;
+            if (cstate == IDLE || bit_done) cnt <= '0;
+            else cnt <= cnt + 1'b1;
+            if (cstate != PROC) tx_cnt <= '0;
+            else if (bit_done) tx_cnt <= tx_cnt + 1'b1;
+        end
     end
-end
 
-assign tx_cnt_reset_triger = nrst & cstate[2];
-
-always_ff @(negedge tx_clk or negedge tx_cnt_reset_triger) begin
-    if (!tx_cnt_reset_triger) begin
-        tx_cnt <= 0;
-    end else begin
-        tx_cnt <= tx_cnt + 1;
+    always_comb begin
+        nstate = cstate;
+        case (cstate)
+            IDLE: if (wr_en) nstate = IN;
+            IN: if (bit_done) nstate = PROC;
+            PROC: if (bit_done && tx_cnt == BITWIDTH-1) nstate = OUT;
+            // Complete a full stop bit, then start a full start bit.
+            OUT: if (bit_done) nstate = wr_en ? IN : IDLE;
+            default: nstate = IDLE;
+        endcase
     end
-end
-
-
-// ********************************
-// FSM
-// ********************************
-always_ff @(negedge clk or negedge nrst) begin
-    if (!nrst) begin
-        cstate <= IDLE;
-    end else begin
-        cstate <= nstate;
-    end
-end
-
-always_comb begin
-    case(cstate) 
-        IDLE : begin
-            if (wr_en) begin
-                nstate = IN;
-            end else begin
-                nstate <= IDLE;
-            end
-        end
-        IN : begin
-            if (tx_clk) begin
-                nstate = PROC;
-            end else begin
-                nstate = nstate;
-            end
-        end
-        PROC : begin
-            if (tx_clk) begin 
-                if (tx_cnt == BITWIDTH-1) begin
-                    nstate = OUT;
-                end else begin
-                    nstate = nstate;
-                end
-            end else begin
-                nstate = nstate;
-            end
-        end
-        OUT : begin
-            if (tx_clk) begin
-                if (wr_en) begin
-                    nstate = PROC;
-                end else begin
-                    nstate = IDLE;
-                end
-            end else begin
-                nstate = nstate;
-            end
-        end
-        default : begin
-            nstate = IDLE;
-        end
-    endcase
-end
-
-
-
-
-
-
 endmodule

@@ -23,9 +23,10 @@ module UART_tx #(
     assign enable = ~ready;
 
     // ********************************
-    // assignment
+    // outdata
     // ********************************
     assign outdata = (send) ? shift_buf[0] : state_bit;
+
     // ********************************
     // cotroller
     // ********************************
@@ -62,6 +63,5 @@ module UART_tx #(
             end
         end
     end
-
-
+    
 endmodule

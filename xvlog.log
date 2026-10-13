@@ -1,0 +1,10 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/others/UART2PS/rtl/FIFO.sv" into library work
+INFO: [VRFC 10-311] analyzing module FIFO
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/others/UART2PS/rtl/top_UART2PS.sv" into library work
+INFO: [VRFC 10-311] analyzing module top_UART2PS
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/others/UART2PS/rtl/axi_UART2PS.sv" into library work
+INFO: [VRFC 10-311] analyzing module axi_UART2PS
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/UART/rtl/axi_lite_reg.v" into library work
+INFO: [VRFC 10-311] analyzing module axi_lite_reg
+ERROR: [VRFC 10-3380] identifier 'reg_config' is used before its declaration [C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/UART/rtl/axi_lite_reg.v:115]
+ERROR: [VRFC 10-8530] module 'axi_lite_reg' is ignored due to previous errors [C:/Users/zlak0/Desktop/PROJECT/major/FPGA-UART/UART/rtl/axi_lite_reg.v:1]

@@ -23,7 +23,7 @@ assign bd_detected_data =   (bd_fifo[bd_bitwidth-1] & bd_fifo[bd_bitwidth-2])
 
 always_ff @(negedge clk or negedge nrst) begin
     if (!nrst) begin
-        bd_fifo <= 0;
+        bd_fifo <= '1;
     end else begin
         bd_fifo <= {bd_fifo[bd_bitwidth-2:0], indata};
     end
@@ -33,6 +33,7 @@ end
 // FIFO
 // ********************************
 logic [BITWIDTH:0] fifo;
+logic enable;
 
 always_ff @(negedge enable or negedge nrst) begin
     if (!nrst) begin
