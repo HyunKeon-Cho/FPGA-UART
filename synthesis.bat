@@ -17,8 +17,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$taskBody = (Get-Con
 exit /b %errorlevel%
 
 :usage
-echo Usage: systhesis.bat MODULE --board BOARD_DIRECTORY [--gui]
-echo Example: systhesis.bat UART_rx --board FPGA\cora-z7-07s\board\B.0
+echo Usage: synthesis.bat MODULE --board BOARD_DIRECTORY [--gui]
+echo Example: synthesis.bat UART_rx --board FPGA\cora-z7-07s\board\B.0
 exit /b 1
 
 # POWERSHELL_PAYLOAD
@@ -44,8 +44,8 @@ try {
     if (-not (Test-Path -LiteralPath $taskXdc -PathType Leaf)) {
         throw "Board constraints not found: $taskXdc"
     }
-    # UART_rx names the test suite; its TB instantiates the complete UART core.
-    $taskDesignTop = if ($taskTop -eq 'UART_rx') { 'top_UART' } else { $taskTop }
+    # UART_rx/UART_tx name test suites; both TBs instantiate the complete UART core.
+    $taskDesignTop = if ($taskTop -in @('UART_rx', 'UART_tx')) { 'top_UART' } else { $taskTop }
     $taskTopFile = Join-Path $taskRoot "UART\rtl\$taskDesignTop.sv"
     if (-not (Test-Path -LiteralPath $taskTopFile -PathType Leaf)) {
         throw "RTL file not found: $taskTopFile"
@@ -61,12 +61,14 @@ lassign $argv root_dir top_name part_name mode xdc_file
 proc synthesize_uart {root_dir top_name part_name xdc_file} {
     set rtl_dir [file join $root_dir UART rtl]
     set design_top $top_name
-    if {$top_name eq "UART_rx"} { set design_top top_UART }
+    if {$top_name in {UART_rx UART_tx}} { set design_top top_UART }
     set sources [list [file join $rtl_dir ${design_top}.sv]]
     if {$design_top eq "top_UART"} {
         lappend sources [file join $rtl_dir clock_generator.sv]
         lappend sources [file join $rtl_dir UART_rx.sv]
         lappend sources [file join $rtl_dir rx_controller.sv]
+        lappend sources [file join $rtl_dir UART_tx.sv]
+        lappend sources [file join $rtl_dir tx_controller.sv]
     }
     read_verilog -sv $sources
     puts "\[bat\] Read constraints: $xdc_file"

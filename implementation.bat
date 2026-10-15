@@ -41,7 +41,7 @@ try {
     if ($taskPart -notmatch '^[A-Za-z0-9_-]+$') { throw 'Invalid FPGA part_name in board.xml.' }
     $taskCheckpoint = Join-Path $taskRoot ".synth\$taskTop\$taskPart\${taskTop}_synth.dcp"
     if (-not (Test-Path -LiteralPath $taskCheckpoint -PathType Leaf)) {
-        throw "Synthesis checkpoint not found. Run systhesis.bat $taskTop --board `"$taskBoard`" first."
+        throw "Synthesis checkpoint not found. Run synthesis.bat $taskTop --board `"$taskBoard`" first."
     }
     $taskVivado = Get-Command vivado.bat -ErrorAction Stop
     $taskOutput = Join-Path $taskRoot ".imple\$taskTop\$taskPart"

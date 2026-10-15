@@ -43,7 +43,7 @@ try {
     if (-not (Test-Path -LiteralPath $taskNetlist -PathType Leaf)) {
         throw "Implementation netlist not found. Run implementation.bat $taskTop --board `"$taskBoard`" first."
     }
-    $taskDesignTop = if ($taskTop -eq 'UART_rx') { 'top_UART' } else { $taskTop }
+    $taskDesignTop = if ($taskTop -in @('UART_rx', 'UART_tx')) { 'top_UART' } else { $taskTop }
     if (-not (Select-String -LiteralPath $taskNetlist -Pattern "^\s*module\s+$taskDesignTop\b" -Quiet)) {
         throw "Netlist does not contain $taskDesignTop. Rebuild synthesis and implementation for $taskTop."
     }

@@ -17,8 +17,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$taskBody = (Get-Con
 exit /b %errorlevel%
 
 :usage
-echo Usage: systhesis_sim.bat MODULE --board BOARD_DIRECTORY [--gui]
-echo Example: systhesis_sim.bat UART_rx --board FPGA\cora-z7-07s\board\B.0
+echo Usage: synthesis_sim.bat MODULE --board BOARD_DIRECTORY [--gui]
+echo Example: synthesis_sim.bat UART_rx --board FPGA\cora-z7-07s\board\B.0
 exit /b 1
 
 # POWERSHELL_PAYLOAD
@@ -40,11 +40,11 @@ try {
     if ($taskPart -notmatch '^[A-Za-z0-9_-]+$') { throw 'Invalid FPGA part_name in board.xml.' }
     $taskNetlist = Join-Path $taskRoot ".synth\$taskTop\$taskPart\${taskTop}_synth.v"
     if (-not (Test-Path -LiteralPath $taskNetlist -PathType Leaf)) {
-        throw "Synthesis netlist not found. Run systhesis.bat $taskTop --board `"$taskBoard`" first."
+        throw "Synthesis netlist not found. Run synthesis.bat $taskTop --board `"$taskBoard`" first."
     }
-    $taskDesignTop = if ($taskTop -eq 'UART_rx') { 'top_UART' } else { $taskTop }
+    $taskDesignTop = if ($taskTop -in @('UART_rx', 'UART_tx')) { 'top_UART' } else { $taskTop }
     if (-not (Select-String -LiteralPath $taskNetlist -Pattern "^\s*module\s+$taskDesignTop\b" -Quiet)) {
-        throw "Netlist does not contain $taskDesignTop. Rebuild with systhesis.bat $taskTop --board `"$taskBoard`"."
+        throw "Netlist does not contain $taskDesignTop. Rebuild with synthesis.bat $taskTop --board `"$taskBoard`"."
     }
     $taskTbDir = Join-Path $taskRoot "UART\sim\$taskTop"
     $taskUvmDir = Join-Path $taskRoot 'UART\sim\UVM'

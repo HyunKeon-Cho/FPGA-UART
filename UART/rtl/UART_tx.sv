@@ -33,7 +33,7 @@ module UART_tx #(
     tx_controller #(
         .OVERSAMPLING_RATE(OVERSAMPLING_RATE),
         .BITWIDTH(BITWIDTH)
-    ) u_tx_controller (
+    ) controller (
         .clk(clk),
         .nrst(nrst),
         .wr_en(wr_en),
