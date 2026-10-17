@@ -9,8 +9,10 @@ module tb_UART_tx;
     // hyperparameters
     // ********************************
     // clock
-    localparam int INTERNAL_CLK_RATE = 50_000_000;
-    localparam time CLK_PERIOD = 1s / INTERNAL_CLK_RATE;
+    localparam int INTERNAL_CLK_RATE = 60_000_000;
+    // Keep the clock period real-valued. A time-valued 60 MHz period rounds
+    // to 17 ns, and dividing that by two truncates the half-period to 8 ns.
+    localparam realtime CLK_PERIOD = 1s / real'(INTERNAL_CLK_RATE);
 
     // DUT
     localparam int BAUD_DIV_INT_WIDTH = 16;
@@ -19,22 +21,22 @@ module tb_UART_tx;
     localparam int BITWIDTH = 8;
 
     // UART
-    localparam int UART_BAUD_RATE = 9600;
-    localparam int TEST_N = 32;
+    localparam int UART_BAUD_RATE = 921600;//460800, 921600;
+    localparam int TEST_N = 1000;
+    localparam int CHANNEL_SKEW_RATE = 50; // 0.1% units: 50 means +/-5% per bit.
+    localparam int CHANNEL_NOISE_RATE = 0; // 0.1% units: 10 means 1% per clock.
 
-    // UART timing has one source: UART_BAUD_RATE. Round up to the
-    // system-clock resolution used by the UVM driver.
+    // UART timing has one source: UART_BAUD_RATE. BIT_CYCLES is retained for
+    // diagnostics; the monitor reference period comes directly from baud.
     localparam int BIT_CYCLES = int'($ceil(real'(INTERNAL_CLK_RATE) / UART_BAUD_RATE));
-    localparam time BIT_PERIOD = BIT_CYCLES * CLK_PERIOD;
+    localparam time BIT_PERIOD = time'(1s / real'(UART_BAUD_RATE));
 
     // oclk toggles twice per oversampling period. The current RTL stalls
     // its integer counter on fractional carry: D = (I - f) / (1 - f).
-    localparam real OVERSAMPLING_DIV = real'(INTERNAL_CLK_RATE)
-                                      / (UART_BAUD_RATE * OVERSAMPLING_RATE * 2.0);
-    localparam int BAUD_DIV_INT = int'($floor(OVERSAMPLING_DIV));
-    localparam int BAUD_DIV_FRAC = int'(
-        (OVERSAMPLING_DIV - BAUD_DIV_INT) / (OVERSAMPLING_DIV - 1.0)
-        * (2.0 ** BAUD_DIV_FRAC_WIDTH));
+    localparam int TEMP_RATE = UART_BAUD_RATE * OVERSAMPLING_RATE * 2;
+    localparam int BAUD_DIV_INT = (INTERNAL_CLK_RATE / TEMP_RATE) - 1;
+    localparam int BAUD_DIV_FRAC = int'((INTERNAL_CLK_RATE % TEMP_RATE) / real'(INTERNAL_CLK_RATE) * (1 << BAUD_DIV_FRAC_WIDTH));
+    localparam real BAUD_DIV_FRAC_REAL = (INTERNAL_CLK_RATE % TEMP_RATE) / real'(INTERNAL_CLK_RATE-TEMP_RATE);
 
     // TX may take one bit to start after a write request. Allow ten frame
     // bits, up to three idle bits, and sixteen bits for the final checks.
@@ -44,7 +46,7 @@ module tb_UART_tx;
     // clock
     // ********************************
     bit clk = 0;
-    always #(CLK_PERIOD / 2) clk = ~clk;
+    always #(CLK_PERIOD / 2.0) clk = ~clk;
 
     // ********************************
     // UVM
@@ -88,10 +90,6 @@ module tb_UART_tx;
         uvm_report_server server;
         uvm_root root;
 
-        // UVM setup
-        if (UART_BAUD_RATE <= 0 || BAUD_DIV_INT < 2
-            || BAUD_DIV_INT >= (2.0 ** BAUD_DIV_INT_WIDTH))
-            $fatal(1, "UART baud rate is outside the supported divider range");
 
         uart_if.bit_cycles = BIT_CYCLES;
         uart_if.bit_period = BIT_PERIOD;
@@ -101,6 +99,7 @@ module tb_UART_tx;
         uvm_config_db#(virtual UART_tx_if)::set(null, "uvm_test_top*", "vif", uart_if);
         uvm_config_db#(time)::set(null, "uvm_test_top", "bit_period", BIT_PERIOD);
         uvm_config_db#(int)::set(null, "uvm_test_top", "test_N", TEST_N);
+        $display("TEMP_RATE: %d BAUD_DIV_INT: %d BAUD_DIV_FRAC: %d BAUD_DIV_FRAC_REAL: %f", TEMP_RATE, BAUD_DIV_INT, BAUD_DIV_FRAC, BAUD_DIV_FRAC_REAL);
 
         $display("UART timing: baud=%0d bit_cycles=%0d bit_period=%0t timeout=%0t",
                  UART_BAUD_RATE, BIT_CYCLES, BIT_PERIOD, TEST_TIMEOUT);

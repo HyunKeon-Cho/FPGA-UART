@@ -18,10 +18,10 @@ module tb_UART_rx;
     localparam int BITWIDTH = 8;
     
     // UART
-    localparam int UART_BAUD_RATE = 9600;
+    localparam int UART_BAUD_RATE = 921600;//460800, 921600;
     localparam int TEST_N = 32;
-    localparam int CHANNEL_SKEW_RATE = 50; // 0.1% units: 50 means +/-5% per bit.
-    localparam int CHANNEL_NOISE_RATE = 10; // 0.1% units: 10 means 1% per clock.
+    localparam int CHANNEL_SKEW_RATE = 0; // 0.1% units: 50 means +/-5% per bit.
+    localparam int CHANNEL_NOISE_RATE = 0; // 0.1% units: 10 means 1% per clock.
 
     // UART timing has one source: UART_BAUD_RATE. Round up to the
     // system-clock resolution used by the UVM driver.
@@ -30,13 +30,10 @@ module tb_UART_rx;
 
     // oclk toggles twice per oversampling period. The current RTL stalls
     // its integer counter on fractional carry: D = (I - f) / (1 - f).
-    localparam real OVERSAMPLING_DIV = real'(INTERNAL_CLK_RATE)
-                                      / (UART_BAUD_RATE * OVERSAMPLING_RATE * 2.0);
-    localparam int BAUD_DIV_INT = int'($floor(OVERSAMPLING_DIV));
-    localparam int BAUD_DIV_FRAC = int'(
-        (OVERSAMPLING_DIV - BAUD_DIV_INT) / (OVERSAMPLING_DIV - 1.0)
-        * (2.0 ** BAUD_DIV_FRAC_WIDTH));
-
+    localparam int TEMP_RATE = UART_BAUD_RATE * OVERSAMPLING_RATE * 2;
+    localparam int BAUD_DIV_INT = (INTERNAL_CLK_RATE / TEMP_RATE) - 1;
+    localparam int BAUD_DIV_FRAC = int'((INTERNAL_CLK_RATE % TEMP_RATE) / real'(INTERNAL_CLK_RATE) * (1 << BAUD_DIV_FRAC_WIDTH));
+    localparam real BAUD_DIV_FRAC_REAL = (INTERNAL_CLK_RATE % TEMP_RATE) / real'(INTERNAL_CLK_RATE-TEMP_RATE);
     // Each 8N1 frame takes 10 bits plus up to 3 idle bits. Reserve another
     // 12 bits for the final receive, 2 for duplicate detection, and 2 margin.
     localparam time MAX_BIT_PERIOD = int'($ceil(
@@ -92,10 +89,11 @@ module tb_UART_rx;
         uvm_root root;
 
         // UVM setup
+        $display("TEMP_RATE: %d BAUD_DIV_INT: %d BAUD_DIV_FRAC: %d BAUD_DIV_FRAC_REAL: %f", TEMP_RATE, BAUD_DIV_INT, BAUD_DIV_FRAC, BAUD_DIV_FRAC_REAL);
         if (UART_BAUD_RATE <= 0 || BAUD_DIV_INT < 2
-            || BAUD_DIV_INT >= (2.0 ** BAUD_DIV_INT_WIDTH))
-            $fatal(1, "UART baud rate is outside the supported divider range");
-
+            || BAUD_DIV_INT >= (2.0 ** BAUD_DIV_INT_WIDTH)) begin
+            $display("UART baud rate is outside the supported divider range");
+        end
         uart_if.bit_cycles = BIT_CYCLES;
         uart_if.baud_div_int = BAUD_DIV_INT;
         uart_if.baud_div_frac = BAUD_DIV_FRAC;

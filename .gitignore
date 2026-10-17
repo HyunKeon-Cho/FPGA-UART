@@ -1,5 +1,6 @@
 .behav
 .synth
 .imple
-UART/vivado
-UART/vitis
+UART/prj_vivado
+UART/prj_vitis
+.vscode

@@ -15,45 +15,17 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="567.500001 us"></ZoomEndTime>
-      <Cursor1Time time="216.320000 us"></Cursor1Time>
+      <ZoomEndTime time="183.100001 us"></ZoomEndTime>
+      <Cursor1Time time="75.376000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="105"></NameColumnWidth>
+      <NameColumnWidth column_width="97"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="16" />
-   <wvobject type="divider" fp_name="divider49">
-      <obj_property name="label">Control</obj_property>
-      <obj_property name="DisplayName">label</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/cstate" type="array">
-      <obj_property name="ElementShortName">cstate[3:0]</obj_property>
-      <obj_property name="ObjectShortName">cstate[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/cnt_nrst" type="logic">
-      <obj_property name="ElementShortName">cnt_nrst</obj_property>
-      <obj_property name="ObjectShortName">cnt_nrst</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/cnt" type="array">
-      <obj_property name="ElementShortName">cnt[3:0]</obj_property>
-      <obj_property name="ObjectShortName">cnt[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/tx_cnt" type="array">
-      <obj_property name="ElementShortName">tx_cnt[2:0]</obj_property>
-      <obj_property name="ObjectShortName">tx_cnt[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/tx_clk" type="logic">
-      <obj_property name="ElementShortName">tx_clk</obj_property>
-      <obj_property name="ObjectShortName">tx_clk</obj_property>
-   </wvobject>
+   <WVObjectSize size="40" />
    <wvobject type="divider" fp_name="divider50">
       <obj_property name="label">output</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/cstate" type="array">
-      <obj_property name="ElementShortName">cstate[3:0]</obj_property>
-      <obj_property name="ObjectShortName">cstate[3:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_UART_tx/dut/tx/indata" type="array">
       <obj_property name="ElementShortName">indata[7:0]</obj_property>
@@ -63,10 +35,6 @@
    <wvobject fp_name="/tb_UART_tx/dut/tx/enable" type="logic">
       <obj_property name="ElementShortName">enable</obj_property>
       <obj_property name="ObjectShortName">enable</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/tx_clk" type="logic">
-      <obj_property name="ElementShortName">tx_clk</obj_property>
-      <obj_property name="ObjectShortName">tx_clk</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_UART_tx/dut/tx/shift_buf" type="array">
       <obj_property name="ElementShortName">shift_buf[7:0]</obj_property>
@@ -87,8 +55,134 @@
       <obj_property name="ElementShortName">txd</obj_property>
       <obj_property name="ObjectShortName">txd</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART_tx/dut/tx/u_tx_controller/nstate_trigger" type="logic">
-      <obj_property name="ElementShortName">nstate_trigger</obj_property>
-      <obj_property name="ObjectShortName">nstate_trigger</obj_property>
+   <wvobject fp_name="/tb_UART_tx/dut/txd" type="logic">
+      <obj_property name="ElementShortName">txd</obj_property>
+      <obj_property name="ObjectShortName">txd</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider49">
+      <obj_property name="label">Control</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/nrst" type="logic">
+      <obj_property name="ElementShortName">nrst</obj_property>
+      <obj_property name="ObjectShortName">nrst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/wr_en" type="logic">
+      <obj_property name="ElementShortName">wr_en</obj_property>
+      <obj_property name="ObjectShortName">wr_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/indata" type="array">
+      <obj_property name="ElementShortName">indata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">indata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/state_bit" type="logic">
+      <obj_property name="ElementShortName">state_bit</obj_property>
+      <obj_property name="ObjectShortName">state_bit</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/send" type="logic">
+      <obj_property name="ElementShortName">send</obj_property>
+      <obj_property name="ObjectShortName">send</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/tx_clk" type="logic">
+      <obj_property name="ElementShortName">tx_clk</obj_property>
+      <obj_property name="ObjectShortName">tx_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/ready" type="logic">
+      <obj_property name="ElementShortName">ready</obj_property>
+      <obj_property name="ObjectShortName">ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/cstate" type="array">
+      <obj_property name="ElementShortName">cstate[3:0]</obj_property>
+      <obj_property name="ObjectShortName">cstate[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/nstate" type="array">
+      <obj_property name="ElementShortName">nstate[3:0]</obj_property>
+      <obj_property name="ObjectShortName">nstate[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/cnt" type="array">
+      <obj_property name="ElementShortName">cnt[3:0]</obj_property>
+      <obj_property name="ObjectShortName">cnt[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/tx_cnt" type="array">
+      <obj_property name="ElementShortName">tx_cnt[2:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_cnt[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/bit_done" type="logic">
+      <obj_property name="ElementShortName">bit_done</obj_property>
+      <obj_property name="ObjectShortName">bit_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/OVERSAMPLING_RATE" type="array">
+      <obj_property name="ElementShortName">OVERSAMPLING_RATE[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OVERSAMPLING_RATE[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/BITWIDTH" type="array">
+      <obj_property name="ElementShortName">BITWIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">BITWIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/COUNTER_BITWIDTH" type="array">
+      <obj_property name="ElementShortName">COUNTER_BITWIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">COUNTER_BITWIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/controller/TX_COUNTER_BITWIDTH" type="array">
+      <obj_property name="ElementShortName">TX_COUNTER_BITWIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">TX_COUNTER_BITWIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider33">
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/nrst" type="logic">
+      <obj_property name="ElementShortName">nrst</obj_property>
+      <obj_property name="ObjectShortName">nrst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/txd" type="logic">
+      <obj_property name="ElementShortName">txd</obj_property>
+      <obj_property name="ObjectShortName">txd</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/wr_en" type="logic">
+      <obj_property name="ElementShortName">wr_en</obj_property>
+      <obj_property name="ObjectShortName">wr_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/ready" type="logic">
+      <obj_property name="ElementShortName">ready</obj_property>
+      <obj_property name="ObjectShortName">ready</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/outdata" type="logic">
+      <obj_property name="ElementShortName">outdata</obj_property>
+      <obj_property name="ObjectShortName">outdata</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/shift_buf" type="array">
+      <obj_property name="ElementShortName">shift_buf[7:0]</obj_property>
+      <obj_property name="ObjectShortName">shift_buf[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/state_bit" type="logic">
+      <obj_property name="ElementShortName">state_bit</obj_property>
+      <obj_property name="ObjectShortName">state_bit</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/send" type="logic">
+      <obj_property name="ElementShortName">send</obj_property>
+      <obj_property name="ObjectShortName">send</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/tx_clk" type="logic">
+      <obj_property name="ElementShortName">tx_clk</obj_property>
+      <obj_property name="ObjectShortName">tx_clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/enable" type="logic">
+      <obj_property name="ElementShortName">enable</obj_property>
+      <obj_property name="ObjectShortName">enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/OVERSAMPLING_RATE" type="array">
+      <obj_property name="ElementShortName">OVERSAMPLING_RATE[31:0]</obj_property>
+      <obj_property name="ObjectShortName">OVERSAMPLING_RATE[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_UART_tx/dut/tx/BITWIDTH" type="array">
+      <obj_property name="ElementShortName">BITWIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">BITWIDTH[31:0]</obj_property>
    </wvobject>
 </wave_config>

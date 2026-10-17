@@ -3,12 +3,14 @@
 #include "xstatus.h"
 #include "xil_printf.h"
 #include "sleep.h"
+#include "xil_io.h" 
 
 // button
-#define BTN_DEVICE_ID  XPAR_AXI_GPIO_0_DEVICE_ID
-#define LED_DEVICE_ID  XPAR_AXI_GPIO_1_DEVICE_ID
+
+#define BTN_BASEADDR  XPAR_AXI_GPIO_0_BASEADDR
+#define LED_BASEADDR  XPAR_AXI_GPIO_1_BASEADDR
 // FPGA
-#define CLK_RATE 50000000U  // 50 MHz
+#define CLK_RATE 60000000U  // 60 MHz
 
 // DUT AXI
 #define UART_AXI_BASEADDR        XPAR_AXI_UART_0_BASEADDR // TODO : update
@@ -26,26 +28,23 @@ static XGpio gpio_btn;
 static const u32 baud_list[BAUD_COUNT] = { 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
 };
 
-static u32 baud_index = 1U;
+static u32 baud_index = 7U;
 
 static void update_baud_rate(u32 idx)
 {
     u32 baud_rate = baud_list[idx];
-    u32 denominator = baud_rate * OVERSAMPLING_RATE * 2U;
-    u32 baud_rate_int = CLK_RATE / denominator - 1;
+    u32 target_rate = baud_rate * OVERSAMPLING_RATE * 2U;
 
-    // 현재 clock_generator의 소수 누산 방식에 맞춘 계산
-    u32 frac_denominator = CLK_RATE - denominator;
+    u32 baud_rate_int = CLK_RATE / target_rate - 1U;
+
     u32 baud_rate_frac = (u32)(
-        ((u64)(CLK_RATE % denominator)
-            * (1U << BAUD_RATE_FRAC_BITWITH)
-            + frac_denominator / 2U)
-        / frac_denominator
+            ((double)(CLK_RATE % target_rate) / (double)(CLK_RATE))
+            * (1 << BAUD_RATE_FRAC_BITWITH)
     );
 
     u32 axi_args =
         (baud_rate_int << BAUD_RATE_FRAC_BITWITH) |
-        (baud_rate_frac & ((1U << BAUD_RATE_FRAC_BITWITH) - 1U));
+        (baud_rate_frac & ((1 << BAUD_RATE_FRAC_BITWITH) - 1ULL));
 
     Xil_Out32(UART_AXI_BASEADDR, axi_args);
 
@@ -57,12 +56,12 @@ int main(void)
 {
     xil_printf("[boot] UART_control\r\n");
 
-    if (XGpio_Initialize(&gpio_led, LED_DEVICE_ID) != XST_SUCCESS) {
+    if (XGpio_Initialize(&gpio_led, LED_BASEADDR) != XST_SUCCESS) {
         xil_printf("[fail] LED initialization\r\n");
         return XST_FAILURE;
     }
 
-    if (XGpio_Initialize(&gpio_btn, BTN_DEVICE_ID) != XST_SUCCESS) {
+    if (XGpio_Initialize(&gpio_btn, BTN_BASEADDR) != XST_SUCCESS) {
         xil_printf("[fail] BTN initialization\r\n");
         return XST_FAILURE;
     }

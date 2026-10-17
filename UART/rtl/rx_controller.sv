@@ -109,7 +109,7 @@ always_ff @(negedge clk or negedge nrst) begin
         enable <= 1'b1;
     end else if (cstate == PROC) begin
         valid <= 0;
-        enable <= (cnt == (OVERSAMPLING_RATE >> 1)) ? 1'b0 : 1'b1;
+        enable <= (cnt == ((OVERSAMPLING_RATE >> 1) - 2)) ? 1'b0 : 1'b1;
     end else if (cstate == OUT) begin
         valid <= 1;
         enable <= 1'b1;

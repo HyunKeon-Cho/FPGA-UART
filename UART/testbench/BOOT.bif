@@ -1,0 +1,7 @@
+//arch = zynq; split = false; format = BIN
+the_ROM_image:
+{
+	[bootloader]C:\Users\zlak0\Desktop\PROJECT\major\FPGA-UART\UART\prj_vitis\UART_echo\export\UART_echo\sw\boot\fsbl.elf
+	C:\Users\zlak0\Desktop\PROJECT\major\FPGA-UART\UART\prj_vitis\UART_controller\_ide\bitstream\design_1_wrapper.bit
+	C:\Users\zlak0\Desktop\PROJECT\major\FPGA-UART\UART\prj_vitis\UART_controller\build\UART_controller.elf
+}

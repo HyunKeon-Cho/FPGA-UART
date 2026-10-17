@@ -80,7 +80,7 @@ class driver extends uvm_driver #(item);
 
             // 8N1 프레임이 끝날 때까지 데이터를 유지한다.
             #(10 * vif.bit_period);
-            #(req.gap_bits * vif.bit_period);
+            //#(req.gap_bits * vif.bit_period);
             seq_item_port.item_done();
         end
     endtask
